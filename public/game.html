@@ -1,0 +1,205 @@
+<html>
+<header>
+    <b>This is Jono's First Game!</b>
+</header>
+
+<canvas id = "gameCanvas" width = "800" height = "600">
+</canvas>
+
+<script>
+    
+    // Global Variables
+    var canvas;
+    var canvasContext;
+    var ball;
+    var player1Score = 0;
+    var player2Score = 0;
+
+    var paddle1;
+    var paddle2;
+    var paddleLength = 100;      // length of paddle vertically
+    var paddleWidth = 10;
+    var ballSpeedX = 7;
+    var ballSpeedY = 3;
+    var paddleSpeed = 3;
+    var framRate = 50;
+    // Class
+    
+    class Ball{
+        constructor (x, y, r){
+            this.y =  y/2;
+            this.x = x/2;
+            this.r = r;
+        }
+        
+        move()
+        {
+            var paddleCenter;
+
+            if(this.x >= canvas.width)
+            {
+                if(this.y > paddle2.y && this.y <paddle2.y+paddleLength)
+                {
+                    ballSpeedX = -ballSpeedX;
+                    
+                    if((this.y < (paddle1.y+(paddle1.length*0.1))) || (this.y > (paddle1.y+paddle1.length*0.9)))
+                    {
+                        ballSpeedY = -ballSpeedY;
+                    }
+                }
+                else{
+                    player1Score++;
+                    resetBall();
+                }
+            }
+            else if (this.x < 0)
+            {
+                if(this.y > paddle1.y && this.y <paddle1.y+paddleLength)
+                {
+                    ballSpeedX = -ballSpeedX;
+
+                    if((this.y < paddle1.y+(paddle1.length*0.1)) || (this.y > paddle1.y+(paddle1.length*0.9)))
+                    {
+                        ballSpeedY = -ballSpeedY;
+                    }
+                }
+                else{
+                    player2Score++;
+                    resetBall();
+                }
+            }
+
+
+            if(this.y >= canvas.height)
+            {
+                ballSpeedY = -ballSpeedY;
+            }
+            else if (this.y < 0)
+            {
+                ballSpeedY = -ballSpeedY;
+            }
+         this.y += ballSpeedY;
+
+         this.x += ballSpeedX;
+        }
+       /* public function move()
+        {
+
+        }*/
+    }
+
+    class Paddle{
+        constructor (x, y,length,width){
+            this.y =  y;
+            this.x = x;
+            this.length = length;
+            this.width = width;
+        }
+
+        move()
+        {
+            // paddle center
+            var paddleCenter = this.length/2;
+            var ballWithInPaddle = this.length/3;
+            if((this.y+paddleCenter) > (ball.y + ballWithInPaddle))
+            {
+                this.y -= paddleSpeed;
+            }
+            else if((this.y+paddleCenter) < (ball.y - ballWithInPaddle))
+            {
+                this.y += paddleSpeed
+            }
+        }
+    }
+
+    // Function
+
+    function calculateMosPos(evt){
+        var rect = canvas.getBoundingClientRect();
+        var root = document.documentElement;
+        var mouseX = evt.clientX - rect.left - root.scrollLeft;
+        var mouseY = evt.clientY - rect.top - root.scrollTop;
+        return{
+            x:mouseX,
+            y:mouseY
+        };
+    }
+
+        // Wait for the page to load
+    window.onload = function (){
+        
+             // Write to the webpage console
+        console.log("Hello world");
+            // This allows the JS code to get the HTML canvas object, allowing to see height, widthed
+        canvas = document.getElementById('gameCanvas')
+        canvasContext = canvas.getContext('2d');
+        paddle1 = new Paddle(1,canvas.height/2,paddleLength,paddleWidth);
+        paddle2 = new Paddle((canvas.width-paddleWidth-1),canvas.height/2,paddleLength,paddleWidth);
+        ball = new Ball(canvas.width/2,canvas.height/2, 10);
+        drawEverything();
+        setInterval(function()
+        {
+            ball.move();
+            //paddle1.move();
+            paddle2.move();
+            console.log(paddle1.y);
+            //console.log(paddle2.y);
+           // console.log(ball.x);
+            drawEverything();
+        },(1000/framRate));
+
+        canvas.addEventListener('mousemove',function(evt){
+            var mousePos = calculateMosPos(evt);
+            paddle1.y = mousePos.y-(paddle1.length/2);
+        });
+    }
+
+    function resetBall()
+    {
+        ball.x = canvas.width/2;
+        ball.y = canvas.height/2;
+    }
+    /*function movePaddle()
+    {
+        // make the paddle hunt for the ball
+        if(paddle2.y > ball.y)
+        {
+         paddle2.y -= paddleSpeed;
+        }
+        else if(paddle2.y < ball.y)
+        {
+          paddle2.y += paddleSpeed;
+        }
+    }*/
+        // Create a function to draw the  Canvas with the new position of ball and paddles
+    function drawEverything()
+    {
+        canvasContext.fillStyle = 'black';
+        canvasContext.fillRect(0,0, canvas.width, canvas.height);
+        
+        canvasContext.fillStyle = 'white';
+        canvasContext.fillRect(paddle1.x,paddle1.y, paddle1.width, paddle1.length);
+
+        canvasContext.fillStyle = 'white';
+        canvasContext.fillRect(paddle2.x,paddle2.y, paddle2.width, paddle2.length);
+
+      /*  canvasContext.fillStyle = 'white';
+        canvasContext.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI, false);
+        canvasContext.fill();*/
+        canvasContext.beginPath();
+        canvasContext.fillStyle = 'white';
+        canvasContext.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI, false);
+        
+        canvasContext.fill();
+        canvasContext.closePath();
+       /* canvasContext.lineWidth = 5;
+        canvasContext.strokeStyle = '#003300';
+        canvasContext.stroke();*/
+
+        canvasContext.fillStyle = 'yellow';
+        canvasContext.fillText(player1Score,100,100);
+        canvasContext.fillStyle = 'orange';
+        canvasContext.fillText(player2Score,canvas.width-100,100);
+    }
+</script>
+</html>
